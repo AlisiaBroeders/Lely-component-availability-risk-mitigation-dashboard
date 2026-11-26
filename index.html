@@ -1,0 +1,380 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lely Risk Mitigation Dashboard – Power BI Report</title>
+<style>
+:root{
+  --chrome:#252423; --chrome-text:#f3f2f1; --pbi-yellow:#f2c811;
+  --canvas:#e6e6e6; --visual:#ffffff; --text:#252423; --muted:#605e5c; --line:#e1dfdd;
+  --red:#c62828; --red-bg:#fdecea; --yellow:#b86e00; --yellow-bg:#fff6dd; --green:#2e7d32; --green-bg:#e7f4e8;
+  --blue:#118dff; --hover:#f3f2f1; --sel:#118dff;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --canvas:#1b1a19; --visual:#2b2a29; --text:#f3f2f1; --muted:#a19f9d; --line:#484644;
+    --red:#ff8a80; --red-bg:#4a2220; --yellow:#ffd54f; --yellow-bg:#44391a; --green:#81c784; --green-bg:#1f3a23;
+    --hover:#3b3a39; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --canvas:#1b1a19; --visual:#2b2a29; --text:#f3f2f1; --muted:#a19f9d; --line:#484644;
+  --red:#ff8a80; --red-bg:#4a2220; --yellow:#ffd54f; --yellow-bg:#44391a; --green:#81c784; --green-bg:#1f3a23;
+  --hover:#3b3a39; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;background:var(--canvas);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+/* top bar */
+.topbar{background:var(--chrome);color:var(--chrome-text);display:flex;align-items:center;gap:12px;padding:8px 16px;font-size:13px;flex-wrap:wrap}
+.logo{display:flex;gap:2px;align-items:flex-end;height:18px}
+.logo i{display:block;width:5px;background:var(--pbi-yellow);border-radius:1px}
+.logo i:nth-child(1){height:8px}.logo i:nth-child(2){height:13px}.logo i:nth-child(3){height:18px}
+.topbar .brand{font-weight:600}
+.topbar .file{color:#c8c6c4}
+.topbar .spacer{flex:1}
+.reset{background:transparent;border:1px solid #8a8886;color:var(--chrome-text);padding:4px 12px;border-radius:2px;font:inherit;cursor:pointer}
+.reset:hover{background:#3b3a39}
+/* canvas */
+.canvas{flex:1;padding:14px;display:grid;gap:12px;
+  grid-template-columns:230px repeat(4,1fr);
+  grid-template-areas:
+   "title title title title title"
+   "slicers k1 k2 k3 k4"
+   "slicers donut donut bars bars"
+   "slicers table table table play";
+  align-content:start}
+@media(max-width:1000px){
+  .canvas{grid-template-columns:1fr 1fr;grid-template-areas:"title title" "slicers slicers" "k1 k2" "k3 k4" "donut donut" "bars bars" "table table" "play play"}
+}
+.v{background:var(--visual);border:1px solid var(--line);border-radius:2px;padding:12px 14px;min-width:0}
+.v h3{margin:0 0 10px;font-size:13px;font-weight:600;color:var(--text)}
+.title{grid-area:title;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:transparent;border:none;padding:0 2px}
+.title h1{margin:0;font-size:20px;font-weight:600;color:var(--red)}
+.title p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.tag{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:3px 10px;border-radius:12px;background:var(--visual)}
+/* slicers */
+.slicers{grid-area:slicers;display:flex;flex-direction:column;gap:14px}
+.sl h3{display:flex;justify-content:space-between;align-items:center}
+.sl .clr{font-size:11px;font-weight:400;color:var(--blue);cursor:pointer;background:none;border:none;padding:0;font-family:inherit}
+.opt{display:flex;align-items:center;gap:8px;padding:5px 4px;font-size:12.5px;cursor:pointer;border-radius:2px;user-select:none}
+.opt:hover{background:var(--hover)}
+.box{width:14px;height:14px;border:1px solid var(--muted);border-radius:2px;flex:none;display:grid;place-items:center;font-size:10px;line-height:1;color:#fff}
+.opt.on .box{background:var(--sel);border-color:var(--sel)}
+.opt.on .box::after{content:"✓"}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+/* cards */
+.k{display:flex;flex-direction:column;justify-content:center;border-left:4px solid var(--line)}
+.k .t{font-size:12px;color:var(--muted)}
+.k .n{font-size:30px;font-weight:600;margin:4px 0 2px}
+.k .s{font-size:11.5px;color:var(--muted)}
+.k.r{border-left-color:var(--red)}.k.r .n{color:var(--red)}
+.k.y{border-left-color:var(--yellow)}.k.y .n{color:var(--yellow)}
+.k.g{border-left-color:var(--green)}.k.g .n{color:var(--green)}
+.k.b{border-left-color:var(--blue)}.k.b .n{color:var(--blue)}
+#k1{grid-area:k1}#k2{grid-area:k2}#k3{grid-area:k3}#k4{grid-area:k4}
+/* donut */
+.donut{grid-area:donut}.bars{grid-area:bars}.tbl{grid-area:table}.play{grid-area:play}
+.dwrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.dwrap svg{width:150px;height:150px;flex:none}
+.leg{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.leg div{display:flex;align-items:center;gap:8px;cursor:pointer;padding:2px 4px;border-radius:2px}
+.leg div:hover{background:var(--hover)}
+.leg b{margin-left:auto;padding-left:14px}
+.empty{font-size:12px;color:var(--muted);padding:10px 0}
+/* bars */
+.bar{display:grid;grid-template-columns:110px 1fr 46px;gap:8px;align-items:center;font-size:12px;margin:7px 0}
+.bar .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .tr{background:var(--hover);height:16px;border-radius:2px;overflow:hidden}
+.bar .fl{height:100%;border-radius:2px}
+.bar .val{text-align:right;color:var(--muted)}
+/* table */
+.tw{overflow-x:auto;max-width:100%}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-weight:600;padding:8px 10px;border-bottom:2px solid var(--line);white-space:nowrap;background:var(--visual);position:sticky;top:0}
+td{padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr:hover{background:var(--hover)}
+.rs{display:inline-block;min-width:92px;padding:3px 8px;border-radius:2px;font-weight:600;font-size:12px}
+.rs.Red{background:var(--red-bg);color:var(--red)}
+.rs.Yellow{background:var(--yellow-bg);color:var(--yellow)}
+.rs.Green{background:var(--green-bg);color:var(--green)}
+/* playbook */
+.pb{margin-bottom:12px;padding:8px 10px;border-left:3px solid var(--line);background:var(--hover);font-size:12px;line-height:1.5}
+.pb h4{margin:0 0 3px;font-size:12.5px}
+.pb ul{margin:0;padding-left:16px;color:var(--muted)}
+/* clickable MPN + detail drawer */
+.mpn{background:none;border:none;padding:0;font:inherit;font-weight:600;color:var(--blue);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.mpn:hover{opacity:.8}
+.mpn:focus-visible,.x:focus-visible,.links a:focus-visible,.copy:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.hint{font-size:11.5px;color:var(--muted);margin:-4px 0 8px}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100vw);background:var(--visual);border-left:1px solid var(--line);z-index:21;transform:translateX(100%);transition:transform .22s;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) 18px;visibility:hidden}
+.drawer.open{transform:none;visibility:visible}
+@media (prefers-reduced-motion:reduce){.drawer,.scrim{transition:none}}
+.dh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:12px}
+.dh h2{margin:0;font-size:19px;font-weight:600;word-break:break-all}
+.dh p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.x{background:none;border:1px solid var(--line);color:var(--text);border-radius:2px;width:30px;height:30px;font-size:16px;cursor:pointer;flex:none}
+.x:hover{background:var(--hover)}
+.sec{margin:16px 0 6px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+.callout{padding:10px 12px;border-left:4px solid var(--line);background:var(--hover);font-size:12.5px;line-height:1.5}
+.callout.Red{border-left-color:var(--red);background:var(--red-bg)}
+.callout.Yellow{border-left-color:var(--yellow);background:var(--yellow-bg)}
+.callout.Green{border-left-color:var(--green);background:var(--green-bg)}
+.callout b{display:block;margin-bottom:2px}
+.dt{width:100%;border-collapse:collapse;font-size:12.5px}
+.dt td{padding:7px 4px;border-bottom:1px solid var(--line);white-space:normal;vertical-align:top}
+.dt td:first-child{color:var(--muted);width:42%}
+.flag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600}
+.flag.bad{background:var(--red-bg);color:var(--red)}
+.flag.warn{background:var(--yellow-bg);color:var(--yellow)}
+.flag.ok{background:var(--green-bg);color:var(--green)}
+.na{color:var(--muted);font-style:italic}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links a,.copy{font:inherit;font-size:12.5px;color:var(--blue);border:1px solid var(--line);padding:6px 10px;border-radius:2px;text-decoration:none;background:none;cursor:pointer}
+.links a:hover,.copy:hover{background:var(--hover)}
+.drivers{margin:0;padding-left:18px;font-size:12.5px;line-height:1.6}
+.note{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:8px}
+/* page tabs */
+.tabs{background:var(--visual);border-top:1px solid var(--line);display:flex;gap:2px;padding:0 14px}
+.tab{padding:8px 16px;font-size:12.5px;color:var(--muted)}
+.tab.act{color:var(--text);font-weight:600;border-top:3px solid var(--pbi-yellow);background:var(--canvas)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo" aria-hidden="true"><i></i><i></i><i></i></div>
+  <span class="brand">Power BI</span>
+  <span class="file">Risk_Mitigation_Dashboard</span>
+  <span class="spacer"></span>
+  <button class="reset" id="resetAll">Clear all slicers</button>
+</div>
+
+<div class="canvas">
+  <div class="v title">
+    <div>
+      <h1>Lely Robotics – Tier-2/3 Electronics Sub-Component Risk</h1>
+      <p>SiliconExpert feed · zero-investment decision tool</p>
+    </div>
+    <span class="tag">Report mockup · sample of 5 MPNs</span>
+  </div>
+
+  <div class="slicers">
+    <div class="v sl">
+      <h3>Risk Zone <button class="clr" data-clear="zone">Clear</button></h3>
+      <div id="sl-zone"></div>
+    </div>
+    <div class="v sl">
+      <h3>Maker (Tier-2/3) <button class="clr" data-clear="maker">Clear</button></h3>
+      <div id="sl-maker"></div>
+    </div>
+    <div class="v sl">
+      <h3>Lifecycle <button class="clr" data-clear="life">Clear</button></h3>
+      <div id="sl-life"></div>
+    </div>
+  </div>
+
+  <div class="v k r" id="k1"><div class="t">Critical Risk (Red)</div><div class="n">14 MPNs</div><div class="s">5.6% of BOM · immediate action</div></div>
+  <div class="v k y" id="k2"><div class="t">Watchlist (Yellow)</div><div class="n">42 MPNs</div><div class="s">16.9% of BOM · extended lead times</div></div>
+  <div class="v k g" id="k3"><div class="t">Stable (Green)</div><div class="n">192 MPNs</div><div class="s">77.5% of BOM · covered by ERP forecast</div></div>
+  <div class="v k b" id="k4"><div class="t">Total Sub-Components</div><div class="n">248 MPNs</div><div class="s">monitored across 18 robot PCBAs</div></div>
+
+  <div class="v donut">
+    <h3>MPNs by risk zone (filtered sample)</h3>
+    <div class="dwrap"><div id="donut"></div><div class="leg" id="leg"></div></div>
+  </div>
+
+  <div class="v bars">
+    <h3>Lead time by MPN (weeks)</h3>
+    <div id="bars"></div>
+  </div>
+
+  <div class="v tbl">
+    <h3>Sub-component risk matrix</h3>
+    <div class="hint">Click an MPN to open its lifecycle and market detail.</div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Sub-Component MPN</th><th>Category</th><th>Maker (Tier-2/3)</th><th>Lead Time</th><th>Sourcing</th><th>Lifecycle</th><th>Risk Score</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="empty" hidden>No rows match the current slicers.</div>
+  </div>
+
+  <div class="v play">
+    <h3>Procurement mitigation playbook</h3>
+    <div class="pb" style="border-left-color:var(--red)"><h4 style="color:var(--red)">Red · score ≥ 3.0</h4><ul><li>Fast-track pin-to-pin alternate qualification for MCU MPNs</li><li>12-week local VMI buffer stock with Avnet/Arrow in NL</li></ul></div>
+    <div class="pb" style="border-left-color:var(--yellow)"><h4 style="color:var(--yellow)">Yellow · 2.0 – 2.9</h4><ul><li>Monitor monthly SiliconExpert PCN/EOL notifications</li><li>Distributor buffer orders at week 20 lead time mark</li></ul></div>
+    <div class="pb" style="border-left-color:var(--green)"><h4 style="color:var(--green)">Green · &lt; 2.0</h4><ul><li>Standard 12–18 month ERP rolling forecast</li><li>No custom inventory intervention</li></ul></div>
+  </div>
+</div>
+
+<div class="tabs"><div class="tab act">Risk overview</div></div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle">
+  <div class="dh">
+    <div><h2 id="dTitle"></h2><p id="dSub"></p></div>
+    <button class="x" id="dClose" aria-label="Close detail panel">✕</button>
+  </div>
+  <div id="dBody"></div>
+</aside>
+
+<script>
+const DATA=[
+ {mpn:"STM32F429ZI",cat:"Microcontroller",maker:"STMicroelectronics",lt:42,src:"Sole-Sourced",life:"Active",score:4.25},
+ {mpn:"PCA9685PW",cat:"PWM Controller",maker:"NXP Semiconductors",lt:38,src:"Single Source",life:"NRND",score:3.80},
+ {mpn:"MAX3232EUE+",cat:"RS-232 Transceiver",maker:"Analog Devices",lt:18,src:"Sole-Sourced",life:"Active",score:3.60},
+ {mpn:"TPS62130RGTR",cat:"Power Management IC",maker:"Texas Instruments",lt:34,src:"Multi-Sourced",life:"Active",score:2.80},
+ {mpn:"LM358DR",cat:"Operational Amplifier",maker:"Texas Instruments",lt:12,src:"Multi-Sourced",life:"Active",score:1.00}
+];
+const zoneOf=s=>s>=3?"Red":s>=2?"Yellow":"Green";
+DATA.forEach(d=>d.zone=zoneOf(d.score));
+const ZCOL={Red:"var(--red)",Yellow:"var(--yellow)",Green:"var(--green)"};
+const sel={zone:new Set(),maker:new Set(),life:new Set()};
+const opts={
+  zone:["Red","Yellow","Green"],
+  maker:[...new Set(DATA.map(d=>d.maker))],
+  life:[...new Set(DATA.map(d=>d.life))]
+};
+const key={zone:"zone",maker:"maker",life:"life"};
+
+function buildSlicer(id,k){
+  const el=document.getElementById(id);
+  el.innerHTML="";
+  opts[k].forEach(v=>{
+    const o=document.createElement("div");
+    o.className="opt"+(sel[k].has(v)?" on":"");
+    o.innerHTML='<span class="box"></span>'+(k==="zone"?'<span class="dot" style="background:'+ZCOL[v]+'"></span>':"")+'<span>'+v+'</span>';
+    o.onclick=()=>{sel[k].has(v)?sel[k].delete(v):sel[k].add(v);render()};
+    el.appendChild(o);
+  });
+}
+function filtered(){
+  return DATA.filter(d=>["zone","maker","life"].every(k=>sel[k].size===0||sel[k].has(d[key[k]])));
+}
+function donut(rows){
+  const counts={Red:0,Yellow:0,Green:0};rows.forEach(r=>counts[r.zone]++);
+  const total=rows.length;
+  const colors={Red:"#c62828",Yellow:"#e0a100",Green:"#2e7d32"};
+  let svg='<svg viewBox="0 0 42 42" role="img" aria-label="Zone share"><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--hover)" stroke-width="7"/>';
+  let off=25;
+  if(total){
+    ["Red","Yellow","Green"].forEach(z=>{
+      const p=counts[z]/total*100;
+      if(p>0){svg+='<circle cx="21" cy="21" r="15.9" fill="none" stroke="'+colors[z]+'" stroke-width="7" stroke-dasharray="'+p+' '+(100-p)+'" stroke-dashoffset="'+off+'"/>';off-=p;}
+    });
+  }
+  svg+='<text x="21" y="22.5" text-anchor="middle" font-size="8" font-weight="600" fill="var(--text)">'+total+'</text><text x="21" y="28" text-anchor="middle" font-size="3.4" fill="var(--muted)">MPNs</text></svg>';
+  document.getElementById("donut").innerHTML=svg;
+  const leg=document.getElementById("leg");leg.innerHTML="";
+  ["Red","Yellow","Green"].forEach(z=>{
+    const d=document.createElement("div");
+    d.innerHTML='<span class="dot" style="background:'+ZCOL[z]+'"></span>'+z+'<b>'+counts[z]+'</b>';
+    d.onclick=()=>{sel.zone.has(z)?sel.zone.delete(z):sel.zone.add(z);render()};
+    leg.appendChild(d);
+  });
+}
+function bars(rows){
+  const el=document.getElementById("bars");
+  if(!rows.length){el.innerHTML='<div class="empty">No data for the current slicers.</div>';return}
+  const max=Math.max(...rows.map(r=>r.lt),1);
+  el.innerHTML=[...rows].sort((a,b)=>b.lt-a.lt).map(r=>
+    '<div class="bar"><span class="nm">'+r.mpn+'</span><div class="tr"><div class="fl" style="width:'+(r.lt/max*100)+'%;background:'+ZCOL[r.zone]+'"></div></div><span class="val">'+r.lt+' wk</span></div>'
+  ).join("");
+}
+function table(rows){
+  document.getElementById("tbody").innerHTML=rows.map(r=>
+    '<tr><td><button class="mpn" data-mpn="'+r.mpn+'">'+r.mpn+'</button></td><td>'+r.cat+'</td><td>'+r.maker+'</td><td>'+r.lt+' Wks</td><td>'+r.src+'</td><td>'+r.life+'</td><td><span class="rs '+r.zone+'">'+r.score.toFixed(2)+' · '+r.zone.toUpperCase()+'</span></td></tr>'
+  ).join("");
+  document.getElementById("empty").hidden=rows.length>0;
+  document.querySelectorAll(".mpn").forEach(b=>b.onclick=()=>openDetail(b.dataset.mpn,b));
+}
+
+/* ---- MPN detail panel ----
+   The page cannot call SiliconExpert directly (no API access from here).
+   Fields marked "Not in feed" fill in when a row carries an `se` object, e.g.
+   {mpn:"...", ..., se:{eol:"2028-06", ltb:"2028-03", pcn:"PCN-1234", alt:["PART-A"]}} */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function outlook(d){
+  if(d.life==="NRND")return{z:"Red",h:"Possible end-of-life ahead",t:"Marked NRND (not recommended for new designs). The maker can announce end-of-life at any time, so check for a last-time-buy notice and start alternate qualification."};
+  if(/sole|single/i.test(d.src)&&d.lt>=26)return{z:"Red",h:"Active, but exposed",t:"Still in production, but a single supplier combined with a long lead time means a supply disruption would stop builds. Consider buffer stock."};
+  if(d.lt>=26||/sole|single/i.test(d.src))return{z:"Yellow",h:"Active, on watch",t:"Still in production. Either the lead time is long or there is only one source, so keep it on the PCN/EOL watchlist."};
+  return{z:"Green",h:"Active and stable",t:"In production with multiple sources and a normal lead time. No lifecycle action needed."};
+}
+function drivers(d){
+  const l=[];
+  if(d.life==="NRND")l.push("Lifecycle status is NRND");
+  if(/sole|single/i.test(d.src))l.push("Sourcing is "+d.src.toLowerCase());
+  if(d.lt>=26)l.push("Lead time of "+d.lt+" weeks is long (26+ weeks)");
+  if(!l.length)l.push("No major risk driver in the feed");
+  return l;
+}
+function seRow(label,val){
+  return '<tr><td>'+label+'</td><td>'+(val?esc(val):'<span class="na">Not in feed</span>')+'</td></tr>';
+}
+let lastFocus=null;
+function openDetail(mpn,from){
+  const d=DATA.find(x=>x.mpn===mpn);if(!d)return;
+  lastFocus=from||null;
+  const o=outlook(d),se=d.se||{},q=encodeURIComponent(d.mpn);
+  const lifeFlag=d.life==="Active"?"ok":d.life==="NRND"?"bad":"warn";
+  document.getElementById("dTitle").textContent=d.mpn;
+  document.getElementById("dSub").textContent=d.cat+" · "+d.maker;
+  document.getElementById("dBody").innerHTML=
+    '<div class="callout '+o.z+'"><b>'+o.h+'</b>'+o.t+'</div>'+
+    '<div class="sec">Why it is flagged</div><ul class="drivers">'+drivers(d).map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>'+
+    '<div class="sec">From the SiliconExpert feed</div><table class="dt">'+
+      '<tr><td>Risk score</td><td>'+d.score.toFixed(2)+' <span class="flag '+(d.zone==="Red"?"bad":d.zone==="Yellow"?"warn":"ok")+'">'+d.zone+'</span></td></tr>'+
+      '<tr><td>Lifecycle</td><td>'+esc(d.life)+'<span class="flag '+lifeFlag+'">'+(d.life==="Active"?"in production":d.life==="NRND"?"not for new designs":"check")+'</span></td></tr>'+
+      '<tr><td>Lead time</td><td>'+d.lt+' weeks</td></tr>'+
+      '<tr><td>Sourcing</td><td>'+esc(d.src)+'</td></tr>'+
+    '</table>'+
+    '<div class="sec">Lifecycle detail</div><table class="dt">'+
+      seRow("Estimated end-of-life",se.eol)+seRow("Last-time-buy date",se.ltb)+seRow("Latest PCN / EOL notice",se.pcn)+
+      seRow("Cross-reference alternates",se.alt&&se.alt.join(", "))+
+    '</table>'+
+    '<div class="note">These four fields need a SiliconExpert export or API pull. This report does not have a live connection, so they stay empty until that data is added.</div>'+
+    '<div class="sec">Look it up in the market</div><div class="links">'+
+      '<a href="https://www.siliconexpert.com/" target="_blank" rel="noopener">SiliconExpert</a>'+
+      '<a href="https://octopart.com/search?q='+q+'" target="_blank" rel="noopener">Octopart</a>'+
+      '<a href="https://www.digikey.com/en/products/result?keywords='+q+'" target="_blank" rel="noopener">Digi-Key</a>'+
+      '<a href="https://www.mouser.com/c/?q='+q+'" target="_blank" rel="noopener">Mouser</a>'+
+      '<button class="copy" id="cpy" type="button">Copy MPN</button>'+
+    '</div>'+
+    '<div class="note">In SiliconExpert, paste the MPN into the part search to see the full lifecycle and PCN history.</div>';
+  document.getElementById("cpy").onclick=e=>{
+    const b=e.currentTarget;
+    const done=()=>{b.textContent="Copied";setTimeout(()=>b.textContent="Copy MPN",1500)};
+    try{navigator.clipboard.writeText(d.mpn).then(done,()=>{b.textContent=d.mpn})}catch(_){b.textContent=d.mpn}
+  };
+  document.getElementById("scrim").classList.add("open");
+  const dr=document.getElementById("drawer");dr.classList.add("open");
+  document.getElementById("dClose").focus();
+}
+function closeDetail(){
+  document.getElementById("scrim").classList.remove("open");
+  document.getElementById("drawer").classList.remove("open");
+  if(lastFocus)lastFocus.focus();
+}
+document.getElementById("dClose").onclick=closeDetail;
+document.getElementById("scrim").onclick=closeDetail;
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDetail()});
+function render(){
+  buildSlicer("sl-zone","zone");buildSlicer("sl-maker","maker");buildSlicer("sl-life","life");
+  const rows=filtered();
+  donut(rows);bars(rows);table(rows);
+}
+document.querySelectorAll("[data-clear]").forEach(b=>b.onclick=()=>{sel[b.dataset.clear].clear();render()});
+document.getElementById("resetAll").onclick=()=>{Object.values(sel).forEach(s=>s.clear());render()};
+render();
+</script>
+</body>
+</html>
+
+</body></html>
